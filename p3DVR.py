@@ -19,6 +19,9 @@ def main():
     b_flag = int(sys.argv[2])
 
     establishTopology()
+    processTopologicalEvents()
+
+    numOfRounds += 1
 
 def establishTopology():
     #Read through first text file to create routers and links for topology
@@ -63,11 +66,16 @@ def processTopologicalEvents():
             n1_id = line[1]
             n2_id = line[2]
             new_cost = line[3]
+            ###check to see if it is time for the event to take place
+            if time_of_event == numOfRounds:
+                n1 = findNode(n1_id)
+                n2 = findNode(n2_id)
 
-            n1 = findNode(n1_id)
-            n2 = findNode(n2_id)
-
-            link = findLink(n1, n2)
+                link = findLink(n1, n2)
+                if new_cost == -1:
+                    links.remove(link)
+                else:
+                    link.cost = new_cost
 
             
 
