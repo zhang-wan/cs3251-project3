@@ -64,6 +64,24 @@ def processTopologicalEvents():
             n2_id = line[2]
             new_cost = line[3]
 
+            n1 = findNode(n1_id)
+            n2 = findNode(n2_id)
+
+            link = findLink(n1, n2)
+
+            
+
+def findLink(node1, node2):
+    for link in links:
+        if link.end1 == node1:
+            if link.end2 == node2:
+                return link
+        else:
+            return
+def findNode(id1):
+    for node in routers:
+        if node.id == id1:
+            return node
 
 if __name__ == "__main__":
     main()
