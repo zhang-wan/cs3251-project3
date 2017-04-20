@@ -20,10 +20,11 @@ def main():
     ## need some way to track rounds for simulation ##
     global numOfRounds    # variable to keep track of k rounds until convergence
 
-    numOfRounds = 0
+    numOfRounds = 30
     
     establishTopology(topology_file)
     processTopologicalEvents(top_changes_file, numOfRounds)
+    print routers
 
     numOfRounds += 1
 
@@ -59,8 +60,6 @@ def establishTopology(f):
                 ### set cost for link (link.cost = cost)
                 l.cost = link_cost
                 links.append(l)
-                print routers
-                print links
 
 def processTopologicalEvents(f, i):
     #Read through second text file to specify topological events
@@ -72,32 +71,45 @@ def processTopologicalEvents(f, i):
     with open(f, 'r') as f:
         lines = f.readlines()
         for line in lines:
-            time_of_event = line[0]
-            n1_id = line[1]
-            n2_id = line[2]
-            new_cost = int(line[3])
+            info = line.split()
+            
+            time_of_event = int(info[0])
+            n1_id = int(info[1])
+            n2_id = int(info[2])
+            new_cost = int(info[3])
+            
             ###check to see if it is time for the event to take place
             if time_of_event == i:
                 n1 = findNode(n1_id)
                 n2 = findNode(n2_id)
 
-                link = findLink(n1, n2, new_cost)
+                print n1
+                print n2
+
                 if new_cost == -1:
+                    link = findLink(n1, n2, links)
                     links.remove(link)
                 else:
-                    link.cost = new_cost
+                    link = findLink(n1, n2, links)
+                    if link == -1:
+                        addLink(n1, n2, new_cost, links)
+                    else:
+                        link.cost = new_cost
+        
+            print links
 
             
 
-def findLink(node1, node2, cost):
-    for link in links:
-        if link.end1 == node1:
-            if link.end2 == node2:
-                return link
-        else:
-            l = linkConnection(node1, node2)
-            l.cost = cost
-            links.append(l)
+def findLink(node1, node2, linkList):
+    for link in linkList:
+        if link.end1 == node1 and link.end2 == node2:
+            return link
+    return -1
+            
+def addLink(node1, node2, cost, linkList):
+    l = linkConnection(node1, node2)
+    l.cost = cost
+    linkList.append(l)
             
 def findNode(id1):
     for node in routers:
