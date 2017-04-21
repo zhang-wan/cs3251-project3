@@ -1,5 +1,5 @@
 import sys
-import numpy
+import math
 from networkclass import node
 from networkclass import linkConnection
 
@@ -18,7 +18,7 @@ def main():
     top_changes_file = sys.argv[2]
     b_flag = int(sys.argv[3])
 
-    ## need some way to track rounds for simulation ##
+    # need some way to track rounds for simulation ##
     global numOfRounds    # variable to keep track of k rounds until convergence
 
     numOfRounds = 30
@@ -27,6 +27,7 @@ def main():
     processTopologicalEvents(top_changes_file, numOfRounds)
 
     numOfRounds += 1
+
 
 def establishTopology(f):
     #Read through first text file to create routers and links for topology
@@ -63,10 +64,9 @@ def establishTopology(f):
     for n in routers:
         setNeighbors(n, links, routers)
         setUpTable(n, numRouters)
-        print n.links
 
     populateTable(routers)
-    bellmanFord(routers)
+    print bellmanFord(routers[0], routers, links)
 
 
 def processTopologicalEvents(f, i):
@@ -131,12 +131,15 @@ def setNeighbors(startNode, links, nodes):
         else:
             startNode.links.append((n.id, 0))
 
+
 def setUpTable(node, num):
     node.table = [[None]]*num
     node.table[node.id-1] = node.links
 
+
 def sendDV(startNode, destNode):
     destNode.table[startNode.id-1] = startNode.links
+
 
 def populateTable(routers):
     for n in routers:
@@ -144,11 +147,30 @@ def populateTable(routers):
             if (n.id != j.id):
                 sendDV(n, j)
 
+
 def bellmanFord(node, routers, links):
-    for n in routers:
-        d1 = node.links[node.id][1]
-        link = findLink(node, n, links)
-        d2 = link.cost
+    # check for neighbors
+    neighbors = []
+    for i in range(len(node.links)):
+        if node.links[i][1] != -1:
+            neighbors.append(node.links[i][0])
+    values = []
+    print neighbors
+    for n in neighbors:
+        if node.id != n:
+            link = findLink(node, routers[n-1], links)
+            print link
+            cost = link.cost
+            print cost
+            print routers[n-1].links
+            dist = routers[n-1].links[node.id+1][1]
+            print dist
+            values.append(cost + dist)
+    print values
+
+    return min(values)
+
+
 
 
 
