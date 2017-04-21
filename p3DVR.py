@@ -1,4 +1,5 @@
 import sys
+import numpy
 from networkclass import node
 from networkclass import linkConnection
 
@@ -21,10 +22,9 @@ def main():
     global numOfRounds    # variable to keep track of k rounds until convergence
 
     numOfRounds = 30
-    
+
     establishTopology(topology_file)
     processTopologicalEvents(top_changes_file, numOfRounds)
-    print routers
 
     numOfRounds += 1
 
@@ -60,9 +60,17 @@ def establishTopology(f):
                 ### set cost for link (link.cost = cost)
                 l.cost = link_cost
                 links.append(l)
+    for n in routers:
+        setNeighbors(n, links, routers)
+        setUpTable(n, numRouters)
+        print n.links
+
+    populateTable(routers)
+    bellmanFord(routers)
+
 
 def processTopologicalEvents(f, i):
-    #Read through second text file to specify topological events
+    # Read through second text file to specify topological events
     time_of_event = 0   #keeps track of when an event takes place (at some specific round)
     n1_id = 0       #variables to hold which nodes/links we are affecting (adding/removing)
     n2_id = 0
@@ -83,9 +91,6 @@ def processTopologicalEvents(f, i):
                 n1 = findNode(n1_id)
                 n2 = findNode(n2_id)
 
-                print n1
-                print n2
-
                 if new_cost == -1:
                     link = findLink(n1, n2, links)
                     links.remove(link)
@@ -95,14 +100,13 @@ def processTopologicalEvents(f, i):
                         addLink(n1, n2, new_cost, links)
                     else:
                         link.cost = new_cost
-        
-            print links
+
 
             
 
 def findLink(node1, node2, linkList):
     for link in linkList:
-        if link.end1 == node1 and link.end2 == node2:
+        if (link.end1 == node1 and link.end2 == node2) or (link.end2 == node1 and link.end1 == node2):
             return link
     return -1
             
@@ -115,6 +119,39 @@ def findNode(id1):
     for node in routers:
         if node.id == id1:
             return node
+
+def setNeighbors(startNode, links, nodes):
+    for n in nodes:
+        if n != startNode:
+            link = findLink(startNode, n, links)
+            if link != -1:
+                startNode.links.append((n.id, link.cost))
+            else:
+                startNode.links.append((-1, -1))
+        else:
+            startNode.links.append((n.id, 0))
+
+def setUpTable(node, num):
+    node.table = [[None]]*num
+    node.table[node.id-1] = node.links
+
+def sendDV(startNode, destNode):
+    destNode.table[startNode.id-1] = startNode.links
+
+def populateTable(routers):
+    for n in routers:
+        for j in routers:
+            if (n.id != j.id):
+                sendDV(n, j)
+
+def bellmanFord(node, routers, links):
+    for n in routers:
+        d1 = node.links[node.id][1]
+        link = findLink(node, n, links)
+        d2 = link.cost
+
+
+
 
 if __name__ == "__main__":
     main()
