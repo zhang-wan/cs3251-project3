@@ -153,20 +153,30 @@ def bellmanFord(node, routers, links):
     neighbors = []
     for i in range(len(node.links)):
         if node.links[i][1] != -1:
-            neighbors.append(node.links[i][0])
+            neighbors.append(node.links[i])
     values = []
-    print neighbors
+    costs = []
+
     for n in neighbors:
-        if node.id != n:
-            link = findLink(node, routers[n-1], links)
-            print link
+        if node != routers[n[0]-1]:
+            #print routers[n[0]-1]
+            link = findLink(node, routers[n[0]-1], links)
+
             cost = link.cost
-            print cost
-            print routers[n-1].links
-            dist = routers[n-1].links[node.id+1][1]
-            print dist
-            values.append(cost + dist)
+
+            costs.append(cost)
+        #else:
+            #costs.append(0)
+        dist = []
+        for j in routers[n[0]-1].links:
+            if j[0] != node.id:
+                dist.append(j[1])
+    for k in range(len(costs)):
+        values.append(costs[k-1]+dist[k-1])
+
     print values
+    print dist
+    print costs
 
     return min(values)
 
